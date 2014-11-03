@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <math.h>
 #include <pthread.h>
 #include "control.h"
@@ -41,10 +42,10 @@ int init()
 	int i, j;
 	kbd_init();
 	for (i = 0; i < 8; i++)
-		for (j = 0; j < 8; j++)
-			mat[i][j] = 0;
-	mat[0][1] = mat[1][0] = mat[1][1] = 1;
-	dots = 3;
+		for (j = 0; j < 8; j++) {
+			if (mat[i][j] = rand() % 2)
+				++dots;
+		}
 	tube_show(0);
 	dot_show(mat);
 	return 0;
