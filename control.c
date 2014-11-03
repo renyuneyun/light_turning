@@ -10,14 +10,18 @@ void jmdelay(int n) {
 			for (k=0;k<100;k++);
 }
 
-int tube_show(char num[2])
+int tube_show(int num)
 {
 	int fd;
 	int NUM[10] = {0xc0, 0xf9, 0xa4, 0xb0, 0x99, 0x92, 0x82, 0xf8, 0x80, 0x90};
-	int i = num[0] - '0', j = num[1] - '0';
-	printf("%d%d\n", i, j);
+	int r = num % 10, l = num / 10, dots = 0;
+	while (l >= 10) {
+		++dots;
+		l /= 10;
+	}
+	printf("%d %d %d\n", dots, l, r);
 	fd = open(LED,O_RDWR);
-	ioctl(fd, 0x12, (NUM[i] << 8)|NUM[j]);
+	ioctl(fd, 0x12, (NUM[l] << 8)|NUM[r]);
 	close(fd);
 	return 0;
 }

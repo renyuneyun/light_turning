@@ -9,7 +9,7 @@
 #include "defs.h"
 
 void jmdelay(int n);
-int tube_show(char num[2]);
+int tube_show(int num);
 int dot_show(unsigned char dot[8][8]);
 
 char get_key();

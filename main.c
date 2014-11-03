@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <math.h>
+#include <pthread.h>
 #include "control.h"
 #include "defs.h"
 
@@ -16,14 +17,21 @@ int steps = 0;
 
 int init();
 int endln();
+int done();
 int move(char key);
 void cgmat(unsigned char mat[8][8], char diff[3][3], int *dots);
-int done();
-void listen_key();
+void *shine();
+void *listen_key();
 
 int main(int argc, char **argv) {
+	pthread_t tid0, tid1;
 	init();
-	listen_key();
+	DEBUG(!);
+	if (pthread_create(&tid0, NULL, listen_key, NULL));
+	if (pthread_create(&tid1, NULL, shine, NULL));
+	pthread_join(tid0, NULL);
+	pthread_cancel(tid1);
+	//listen_key();
 	endln();
 	return 0;
 }
@@ -31,14 +39,13 @@ int main(int argc, char **argv) {
 int init()
 {
 	int i, j;
-	char ch[2] = {'0', '0'};
 	kbd_init();
 	for (i = 0; i < 8; i++)
 		for (j = 0; j < 8; j++)
 			mat[i][j] = 0;
 	mat[0][1] = mat[1][0] = mat[1][1] = 1;
 	dots = 3;
-	tube_show(ch);
+	tube_show(0);
 	dot_show(mat);
 	return 0;
 }
@@ -64,9 +71,7 @@ int move(char key)
 		if (key == mvcmd[i]) {
 			x = (x + movements[i][0] + 8) % 8;
 			y = (y + movements[i][1] + 8) % 8;
-			ch[0] = x + '0';
-			ch[1] = y + '0';
-			tube_show(ch);
+			tube_show(x * 10 + y);
 			return i;
 		}
 	}
@@ -98,10 +103,36 @@ int done()
 	int i, j;
 	if (dots == 0)
 		return 1;
+	for (i = 0; i < 8; i++)
+		for (j = 0; j < 8; j++)
+			if (mat[i][j] > 0)
+				return 0;
 	return 0;
 }
 
-void listen_key()
+void *shine()
+{
+	unsigned char mat0[8][8];
+	char diff[3][3] = {{0, 0, 0},
+					{0, 1, 0},
+					{0, 0, 0}};
+	int i, j;
+	int null = 0;
+	while (1) {
+		for (i = 0; i < 8; i++)
+			for (j = 0; j < 8; j++)
+				mat0[i][j] = mat[i][j];
+		cgmat(mat0, diff, &null);
+		dot_show(mat);
+		jmdelay(200);
+		dot_show(mat0);
+		jmdelay(100);
+		dot_show(mat);
+		jmdelay(200);
+	}
+}
+
+void *listen_key()
 {
 	int m;
 	char key;
